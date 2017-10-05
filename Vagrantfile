@@ -16,10 +16,12 @@ Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |domain|
     domain.memory = 2048
   end
-
+  config.vm.provision :ansible do |ansible|
+    ansible.compatibility_mode = '2.0'
+    ansible.playbook = ''
+  end
 
   config.vm.define :ansiblesetup do |node|
-    node.vm.hostname = 'ansible-setup'
     node.vm.network :private_network,
       :ip => '192.168.0.2',
       :prefix => '24',
@@ -97,6 +99,24 @@ Vagrant.configure("2") do |config|
     end
   end
 
+  config.vm.define :tower3 do |node|
+    node.vm.network :private_network,
+      :ip => '192.168.0.14',
+      :prefix => '24',
+      :libvirt__forward_mode => 'veryisolated',
+      :libvirt__dhcp_enabled => false,
+      :libvirt__network_name => 'tower_net'
+    node.vm.provision :ansible do |ansible|
+      ansible.playbook = 'centos.yml'
+      ansible.groups = {
+        "centoshosts" => ['tower3']
+      }
+
+
+    end
+  end
+
+
   config.vm.define :postgres1 do |node|
     node.vm.network :private_network,
       :ip => '192.168.0.12',
@@ -104,6 +124,11 @@ Vagrant.configure("2") do |config|
       :libvirt__forward_mode => 'veryisolated',
       :libvirt__dhcp_enabled => false,
       :libvirt__network_name => 'tower_net'
+    node.vm.provider :libvirt do |domain|
+      domain.memory = 1024
+    end
+
+
     node.vm.provision :ansible do |ansible|
       ansible.playbook = 'centos.yml'
       ansible.groups = {
@@ -121,6 +146,10 @@ Vagrant.configure("2") do |config|
       :libvirt__forward_mode => 'veryisolated',
       :libvirt__dhcp_enabled => false,
       :libvirt__network_name => 'tower_net'
+    node.vm.provider :libvirt do |domain|
+      domain.memory = 1024
+    end
+
     node.vm.provision :ansible do |ansible|
       ansible.playbook = 'centos.yml'
       ansible.groups = {
